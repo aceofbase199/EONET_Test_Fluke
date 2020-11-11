@@ -9,7 +9,6 @@ EONET.ApiClient/ApiClient/bin/
 EONET.ApiClient/ApiClient/obj/
 EONET.Data/bin/
 EONET/wwwroot/package-lock.json
-EONET/wwwroot/lib/
 EONET/wwwroot/js/bundle.js
 EONET/wwwroot/js/main.js
 EONET/wwwroot/js/site.js
