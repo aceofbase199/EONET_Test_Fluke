@@ -8,5 +8,4 @@ EONET.Data/obj/
 EONET.ApiClient/ApiClient/bin/
 EONET.ApiClient/ApiClient/obj/
 EONET.Data/bin/
-EONET/wwwroot/package-lock.json
 EONET/wwwroot/js/bundle.js
