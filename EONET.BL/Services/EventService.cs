@@ -58,7 +58,7 @@ namespace EONET.BL.Services
 
             if (model.Category.HasValue && model.Category.Value > 0)
             {
-                events = events.Where(x => x.Categories.Any(y => y.Id == 8)).ToList();
+                events = events.Where(x => x.Categories.Any(y => y.Id == model.Category.Value)).ToList();
             }
 
             return events;

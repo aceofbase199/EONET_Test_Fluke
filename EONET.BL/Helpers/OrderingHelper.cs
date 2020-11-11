@@ -13,6 +13,7 @@ namespace EONET.BL.Helpers
                 return entities;
 
             var propertyInfo = entities.First().GetType().GetProperty(propertyName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+
             return sortingOrder == SortingDirection.Ascend
                 ? entities.OrderBy(e => propertyInfo.GetValue(e, null))
                 : entities.OrderByDescending(e => propertyInfo.GetValue(e, null));

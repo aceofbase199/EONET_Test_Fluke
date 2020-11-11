@@ -101,3 +101,7 @@ body {
 .mr-s-15 {
   margin: 15px 0;
 }
+
+.w-100 {
+  width: 100%;
+}

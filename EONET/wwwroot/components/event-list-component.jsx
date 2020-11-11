@@ -6,31 +6,34 @@ import { Link } from 'react-router-dom';
 import { openErrorNotification, openSuccessNotification } from '../helpers/notification-helper';
 
 const { Option } = Select;
+const defaultLabeledOption = { key: -1, label: 'All' };
 
 export class EventListComponent extends React.Component {
-    state = {
-        events: [],
-        categoriesOptions: [],
-        filters: {
-            statusOptions: ['All', 'Open', 'Closed'], 
-            selectedСategory: -1,
-            selectedStatus: 'All',
-            selectedDate: moment.utc().add(-1, 'M'),
-        },
-        sorting: {
-            sortField: 'Title',
-            sortOrder: 'ascend',
-        },
-        pagination: {
-            pageSize: 10,
-            pageNumber: 1   
-        },
-        loading: true
-    };
-    
     constructor(props) {
         super(props);
 
+        this.state = {
+            events: [],
+            categoriesOptions: [],
+            filters: {
+                statusOptions: ['All', 'Open', 'Closed'], 
+                selectedСategory: defaultLabeledOption,
+                selectedStatus: 'All',
+                selectedDate: moment.utc().add(-1, 'M'),
+            },
+            sorting: {
+                sortField: 'Title',
+                sortOrder: 'ascend',
+            },
+            pagination: {
+                pageSize: 10,
+                pageNumber: 1   
+            },
+            loading: true
+        };
+    }
+
+    componentDidMount() {
         this.loadEvents();
         this.loadCategories();
     }
@@ -40,7 +43,7 @@ export class EventListComponent extends React.Component {
 
         return {
             status: filters && filters.selectedStatus || undefined,
-            category: filters && filters.selectedСategory && filters.selectedСategory.key || -1,
+            category: filters && filters.selectedСategory && filters.selectedСategory.key || defaultLabeledOption.key,
             date: filters && filters.selectedDate || moment.utc().add(-1, 'M'),
             sortField: sorting && sorting.sortField || 'Title',
             sortOrder: sorting && sorting.sortOrder || 'ascend'
@@ -53,8 +56,7 @@ export class EventListComponent extends React.Component {
 
         this.changeValueByKey('loading')(true);
         Axios.post(url, this.getFilterModel())
-            .then(({ data }) =>
-            {
+            .then(({ data }) => {
                 if (data.succeeded && data.data) {
                     this.setState({
                         loading: false,
@@ -65,26 +67,23 @@ export class EventListComponent extends React.Component {
                       });
                     openSuccessNotification("Events loaded successfully");
                 } else {
-                    this.changeValueByKey('loading')(false);
                     openErrorNotification("Failed to load events");
                 }
             })
             .catch(error => {
                 console.error(error);
-                this.changeValueByKey('loading')(false);
                 openErrorNotification("Failed to load events");
-            });
-    };
+            })
+            .finally(() => this.changeValueByKey('loading')(false));
+    }
 
     loadCategories = () => {
         Axios.get(`/categories`)
-            .then(({ data }) =>
-            {
-                if (data.succeeded && data.data) {
-                    const mappedCategories = data.data.map(x => { return { key: x.id, label: x.title }});
-                    const defaultLabeledOption = { key: -1, label: 'All' };
+            .then(({ data }) => {
+                if (data) {
+                    const mappedCategories = data.map(x => { return { key: x.id, label: x.title }});
 
-                    if (!mappedCategories.find(x => x.key === -1))
+                    if (!mappedCategories.find(x => x.key === defaultLabeledOption.key))
                         mappedCategories.unshift(defaultLabeledOption);
 
                     this.setState((prevState) => {
@@ -113,25 +112,28 @@ export class EventListComponent extends React.Component {
             {
                 title: 'Id',
                 dataIndex: 'id',
-                key: 'id',
+                key: 0,
                 sorter: true,
                 sortDirections: ['descend', 'ascend'],
             }, {
+                key: 1,
                 title: 'Title',
                 dataIndex: 'title',
                 render: (cell, record) => <Link to={`/events/${record.id}`}>{cell}</Link> ,
                 sorter: true,
                 sortDirections: ['descend', 'ascend'],
             }, {
+                key: 2,
                 title: 'Description',
                 dataIndex: 'description',
             }, {
+                key: 3,
                 title: 'Link',
                 dataIndex: 'link',
                 render: text => <a href={text}>{text}</a>,
             }
         ]
-    };
+    }
 
     changeValueByKey = key => value => {
         this.setState((prevState) => {
@@ -142,7 +144,7 @@ export class EventListComponent extends React.Component {
         });
     }
 
-    handleTableChange = (pagination, filters, sorter) => {
+    handleTableChange = (pagination, _filters, sorter) => {
         this.setState((prevState) => {
             return {
                 ...prevState,
@@ -161,11 +163,12 @@ export class EventListComponent extends React.Component {
     }
 
     getPagination = () => {
+        const { events } = this.state;
+
         return {
             defaultPageSize: 10,
-            pageSizeOptions: [10, 20, 50],
             showTotal: true,
-            total: this.state.events.length
+            total: events.length
         };
     }
 
@@ -181,28 +184,30 @@ export class EventListComponent extends React.Component {
         );
     }
 
+    disabledDate = (current) => {
+        return current && current >= moment().endOf('day');
+    } 
+
     render () {
         const { events, filters, pagination, loading, categoriesOptions  } = this.state;
 
         return (
-            <div>
+            <>
                 <div className="row mr-s-15">
                     <div className="col-md-3 col-sm-12">
                         <span className="pr-10">Category</span>
-                        <Select style={{width: '100%'}}
-                            defaultValue={categoriesOptions && categoriesOptions.length && categoriesOptions[0] || undefined}
+                        <Select className="w-100"
                             value={filters.selectedСategory}
                             labelInValue
                             onChange={this.handleFilterChange('selectedСategory')}>
-                            {categoriesOptions && categoriesOptions.map((opt, index) => {
+                            {categoriesOptions && categoriesOptions.map(opt => {
                                 return <Option key={opt.key} value={opt.key} title={opt.label}>{opt.label}</Option>
                             })}
                         </Select>
                     </div>
                     <div className="col-md-3 col-sm-12">
                         <span className="pr-10">Status</span>
-                        <Select style={{width: '100%'}}
-                            defaultActiveFirstOption
+                        <Select className="w-100"
                             value={filters.selectedStatus}
                             onChange={this.handleFilterChange('selectedStatus')}>
                             {filters.statusOptions.map((opt, index) => {
@@ -212,10 +217,10 @@ export class EventListComponent extends React.Component {
                     </div>
                     <div className="col-md-3 col-sm-12">
                         <span className="pr-10">Date</span>
-                        <DatePicker style={{width: '100%'}}
+                        <DatePicker className="w-100"
+                            disabledDate={this.disabledDate}
                             value={filters.selectedDate} 
-                            onChange={this.handleFilterChange('selectedDate')}
-                             />
+                            onChange={this.handleFilterChange('selectedDate')} />
                     </div>
                 </div>
                 <Table columns={this.getColumns()}
@@ -227,7 +232,7 @@ export class EventListComponent extends React.Component {
                     scroll={{ x: '100%' }}
                     className='m-s-10'
                     rowClassName={(record) => !record.isOpen ? 'closed-event' : ''}/>
-            </div>
+            </>
         )
     }
 }

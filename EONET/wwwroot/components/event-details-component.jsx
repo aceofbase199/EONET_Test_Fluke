@@ -1,5 +1,6 @@
 import Axios from 'axios';
 import React from 'react';
+import moment from 'moment';
 import { withRouter } from 'react-router';
 import { openSuccessNotification, openErrorNotification } from '../helpers/notification-helper';
 import { Card, Spin } from 'antd';
@@ -18,9 +19,8 @@ class EventDetailsComponent extends React.Component {
     loadEvent = () => {
         const { id } = this.props.match.params;
 
-        Axios.get(`${window.location.origin}/event/${id}`)
-            .then(({ data }) =>
-            {
+        Axios.get(`/event/${id}`)
+            .then(({ data }) => {
                 if (data) {
                     this.setState({
                         event: data
@@ -51,7 +51,7 @@ class EventDetailsComponent extends React.Component {
                 <p><strong>Id: </strong> {event.id}</p>
                 <p><strong>Title: </strong> {event.title}</p>
                 <p><strong>Link: </strong><a href={event.link}> {event.link}</a></p>
-                <p><strong>DateTime: </strong> {event.closed}</p>
+                {event.closed && <p><strong>Closed Date: </strong> {moment(event.closed).format('DD/MM/YYYY')}</p>}
             </Card>
         )
     }

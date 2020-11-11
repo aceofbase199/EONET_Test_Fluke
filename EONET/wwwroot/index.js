@@ -16,9 +16,7 @@ global.renderPage = function () {
     ReactDOM.render(
     <Router>
         <Switch>
-          <Route exact path="/">
-            <EventListComponent />
-          </Route>
+          <Route exact path="/" component={EventListComponent} />
           <Route path="/events/:id" component={EventDetailsComponentWithRouter} />
         </Switch>
     </Router>, mainNode

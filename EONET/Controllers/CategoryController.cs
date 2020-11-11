@@ -1,8 +1,5 @@
 ﻿using EONET.BL.Abstraction;
-using EONET.BL.Models;
-using EONET.Web.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EONET.Web.Controllers
@@ -25,7 +22,7 @@ namespace EONET.Web.Controllers
             if (models == null)
                 return Json(new { status = "error", message = "Couldn't load categories" });
 
-            return Ok(new Response<List<CategoryModel>>(models));
+            return Ok(models);
         }
 
     }
