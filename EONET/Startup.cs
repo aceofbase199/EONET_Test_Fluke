@@ -9,7 +9,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Polly;
+using Polly.Extensions.Http;
 using System;
+using System.Net.Http;
 using System.Text.Json.Serialization;
 
 namespace EONET
@@ -32,11 +35,11 @@ namespace EONET
             services.AddTransient<ICategoryService, CategoryService>();
             services.AddSingleton<IHttpEonetClient, HttpEonetClient>();
 
-            var section = Configuration.GetSection("ApiClient");
+            var apiClientSection = Configuration.GetSection("ApiClient");
             services.AddHttpClient("eonetClient", c =>
             {
-                c.BaseAddress = new Uri(section.GetValue<string>("Url"));
-            });
+                c.BaseAddress = new Uri(apiClientSection.GetValue<string>("Url"));
+            }).AddPolicyHandler(GetRetryPolicy());
 
             services.AddControllersWithViews();
 
@@ -80,6 +83,16 @@ namespace EONET
                     pattern: "{*home}",
                     defaults: new { controller = "Home", action = "Index" });
             });
+        }
+
+        private IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+        {
+            var section = Configuration.GetSection("ApiClient");
+            var retryCount = section.GetValue<int>("RetryCount");
+
+            return HttpPolicyExtensions.HandleTransientHttpError()
+                                       .OrResult(msg => msg.StatusCode == System.Net.HttpStatusCode.NotFound)
+                                       .WaitAndRetryAsync(retryCount, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }
     }
 }

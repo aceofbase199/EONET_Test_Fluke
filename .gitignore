@@ -9,3 +9,7 @@ EONET.ApiClient/ApiClient/bin/
 EONET.ApiClient/ApiClient/obj/
 EONET.Data/bin/
 EONET/wwwroot/js/bundle.js
+EONET/wwwroot/bundle/js/bundle.js
+EONET/ReactApp/node_modules/
+EONET.UnitTests/bin/
+EONET.UnitTests/obj/

@@ -2,7 +2,6 @@
 using EONET.Api.Client;
 using EONET.BL.Abstraction;
 using EONET.BL.Extensions;
-using EONET.BL.Helpers;
 using EONET.BL.Models;
 using EONET.DAL.Entities;
 using System;
